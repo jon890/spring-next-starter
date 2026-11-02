@@ -7,7 +7,7 @@
 
 ## 지키는 방법
 
-`@Test` 를 붙인 메서드마다 `@DisplayName("…")` 을 붙인다. 문장은 관측할 결과로 끝낸다.
+`@Test`, `@ParameterizedTest`, `@RepeatedTest`, `@TestFactory` 를 붙인 메서드마다 `@DisplayName("…")` 을 붙인다. 문장은 관측할 결과로 끝낸다.
 
 ## 예외
 
@@ -15,4 +15,4 @@
 
 ## 검사
 
-`ArchitectureRulesTest.TEST_METHODS_HAVE_DISPLAY_NAME` 이 테스트 코드의 `@Test` 메서드에 `@DisplayName` 이 있는지 본다.
+`ArchitectureRulesTest.TEST_METHODS_HAVE_DISPLAY_NAME` 이 테스트 코드의 그 메서드들에 `@DisplayName` 이 있는지 본다.

@@ -7,6 +7,7 @@ import com.example.starter.support.MutableClock;
 import com.example.starter.support.TestClockConfig;
 import java.time.Duration;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +21,14 @@ class BaseTimeEntityTest {
     @Autowired
     private MutableClock clock;
 
+    @BeforeEach
+    void setUp() {
+        clock.set(TestClockConfig.START);
+    }
+
     @AfterEach
     void tearDown() {
         repository.deleteAll();
-        clock.set(TestClockConfig.START);
     }
 
     @Test

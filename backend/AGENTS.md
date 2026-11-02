@@ -26,6 +26,7 @@ Spring Boot 4 와 Java 21, Gradle(Kotlin DSL)을 쓴다. 운영 DB 는 MySQL, �
 ## 마이그레이션
 
 `src/main/resources/db/migration/V<번호>__<설명>.sql` 로 더한다. 테이블과 컬럼 이름은 lower_snake_case 로 쓴다.
+시각은 `Instant` 로 다루고 UTC 로 저장한다(`hibernate.jdbc.time_zone: UTC`).
 `BaseTimeEntity` 를 상속한 엔티티의 테이블에는 `created_at DATETIME(6) NOT NULL`, `updated_at DATETIME(6) NOT NULL` 을 둔다.
 **이미 적용된 마이그레이션 파일은 고치지 않는다.** Flyway 가 주석까지 체크섬에 넣어 기동이 멈춘다.
 `src/test/resources/db/test-migration/` 은 테스트 전용 테이블이다. 운영 DB 에는 적용되지 않는다.

@@ -8,13 +8,21 @@ import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.lang.ArchRule;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.Year;
+import java.time.YearMonth;
 import java.time.ZonedDateTime;
+import java.util.Date;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.params.ParameterizedTest;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -46,12 +54,31 @@ class ArchitectureRulesTest {
                     .orShould()
                     .callMethod(LocalDate.class, "now")
                     .orShould()
+                    .callMethod(LocalTime.class, "now")
+                    .orShould()
+                    .callMethod(Year.class, "now")
+                    .orShould()
+                    .callMethod(YearMonth.class, "now")
+                    .orShould()
                     .callMethod(ZonedDateTime.class, "now")
                     .orShould()
                     .callMethod(OffsetDateTime.class, "now")
                     .orShould()
                     .callMethod(System.class, "currentTimeMillis")
+                    .orShould()
+                    .callConstructor(Date.class)
+                    .orShould()
+                    .callMethod(Clock.class, "systemDefaultZone")
                     .because("현재 시각은 주입된 Clock 으로 구한다(rule-1)");
+
+    /** rule-1. 시계 빈을 만드는 shared.config 만 시스템 시계를 만든다. */
+    static final ArchRule SYSTEM_CLOCK_ONLY_IN_CONFIG =
+            noClasses()
+                    .that()
+                    .resideOutsideOfPackage(BASE_PACKAGE + ".shared.config")
+                    .should()
+                    .callMethod(Clock.class, "systemUTC")
+                    .because("시스템 시계는 ClockConfig 만 만든다(rule-1)");
 
     /** rule-2. */
     static final ArchRule NO_FIELD_INJECTION =
@@ -65,6 +92,12 @@ class ArchitectureRulesTest {
             methods()
                     .that()
                     .areAnnotatedWith(Test.class)
+                    .or()
+                    .areAnnotatedWith(ParameterizedTest.class)
+                    .or()
+                    .areAnnotatedWith(RepeatedTest.class)
+                    .or()
+                    .areAnnotatedWith(TestFactory.class)
                     .should()
                     .beAnnotatedWith(DisplayName.class)
                     .because("테스트 문장은 DisplayName 으로 쓴다(rule-3)");
@@ -83,6 +116,7 @@ class ArchitectureRulesTest {
     @DisplayName("rule-1: 운영 코드는 현재 시각을 직접 구하지 않는다")
     void noDirectNow() {
         NO_DIRECT_NOW.check(PRODUCTION);
+        SYSTEM_CLOCK_ONLY_IN_CONFIG.check(PRODUCTION);
     }
 
     @Test

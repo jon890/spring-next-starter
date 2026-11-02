@@ -16,4 +16,5 @@
 
 ## 검사
 
-`ArchitectureRulesTest.NO_DIRECT_NOW` 가 운영 코드에서 `Instant`, `LocalDateTime`, `LocalDate`, `ZonedDateTime`, `OffsetDateTime` 의 `now` 와 `System.currentTimeMillis` 호출을 찾는다.
+`ArchitectureRulesTest.NO_DIRECT_NOW` 가 운영 코드에서 `Instant`, `LocalDateTime`, `LocalDate`, `LocalTime`, `Year`, `YearMonth`, `ZonedDateTime`, `OffsetDateTime` 의 `now`, `System.currentTimeMillis`, `new Date()`, `Clock.systemDefaultZone` 호출을 찾는다.
+`SYSTEM_CLOCK_ONLY_IN_CONFIG` 가 `shared.config` 밖의 `Clock.systemUTC` 호출을 찾는다.

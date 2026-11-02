@@ -5,6 +5,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.starter.support.IntegrationTest;
+import com.example.starter.support.MutableClock;
+import java.time.Instant;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +19,21 @@ class SystemInfoControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private MutableClock clock;
+
+    @BeforeEach
+    void setUp() {
+        clock.set(Instant.parse("2026-03-04T05:06:07Z"));
+    }
+
     @Test
     @DisplayName("애플리케이션 이름과 주입된 시계의 현재 시각을 돌려준다")
     void returnsApplicationNameAndServerTime() throws Exception {
         mockMvc.perform(get("/api/system/info"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.application").value("starter"))
-                .andExpect(jsonPath("$.serverTime").value("2026-01-01T00:00:00Z"));
+                .andExpect(jsonPath("$.serverTime").value("2026-03-04T05:06:07Z"));
     }
 
     @Test
