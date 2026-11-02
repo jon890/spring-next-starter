@@ -56,7 +56,7 @@
 
 ### 구성
 
-- backend(R1, R2): Java 25(Gradle toolchain 과 foojay resolver 로 없으면 내려받는다), Spring Boot 4.0, Gradle Kotlin DSL 과 version catalog(`backend/gradle/libs.versions.toml`). 운영 MySQL, 테스트는 MySQL 모드 H2. Flyway 가 스키마를 만들고 Hibernate 는 `validate` 만 한다. 시각은 UTC 로 저장한다. 로컬 MySQL 은 루트 `compose.yaml` 이 띄운다. 접속 값은 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` 로 덮어쓴다.
+- backend(R1, R2): Java 25(Gradle toolchain 과 foojay resolver 로 없으면 내려받는다), Spring Boot 4.1, Gradle Kotlin DSL 과 version catalog(`backend/gradle/libs.versions.toml`). 운영 MySQL, 테스트는 MySQL 모드 H2. Flyway 가 스키마를 만들고 Hibernate 는 `validate` 만 한다. 시각은 UTC 로 저장한다. 로컬 MySQL 은 루트 `compose.yaml` 이 띄운다. 접속 값은 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` 로 덮어쓴다.
 - 감사 필드(R2): `BaseTimeEntity` 가 `created_at`, `updated_at` 을 갖고 `JpaAuditingConfig` 가 `Clock` 빈으로 채운다. 확인용 엔티티와 테이블은 테스트 소스와 `db/test-migration` 에만 둔다.
 - web(R4): Next.js 16 App Router, TypeScript, Tailwind CSS 4, pnpm. 컴포넌트 라이브러리는 넣지 않는다. backend 는 서버 컴포넌트에서 `BACKEND_URL` 로 부르고, 실패하면 `null` 로 바꿔 화면에 연결 안 됨을 보인다.
 - 규칙(R3): 번호 체계(INDEX.md 와 rule-N.md, 검사 연결)를 두고, 규칙은 검사가 붙은 일반적인 것만 둔다. 상세는 [`docs/code-rules/INDEX.md`](../../code-rules/INDEX.md).
