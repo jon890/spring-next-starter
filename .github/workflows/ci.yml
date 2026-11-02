@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# action 은 태그 대신 커밋 SHA 로 고정한다. 태그가 옮겨져도 같은 코드가 돈다.
+jobs:
+  public-safe:
+    name: public-safe
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+      - name: 공개 정보 검사
+        # pull_request_target 으로 바꾸지 않는다. 그러면 포크 PR 의 코드가 secret 을 받은 채 실행된다.
+        # 값 목록은 선택이다. repository secret PUBLIC_REPO_DENYLIST 에 한 줄에 정규식 하나씩 넣으면 함께 검사한다.
+        env:
+          DENYLIST_PATTERNS: ${{ secrets.PUBLIC_REPO_DENYLIST }}
+        shell: bash
+        run: |
+          if [ -n "$DENYLIST_PATTERNS" ]; then
+            work=$(mktemp -d)
+            trap 'rm -rf "$work"' EXIT
+            printf '%s\n' "$DENYLIST_PATTERNS" > "$work/denylist"
+            export PUBLIC_REPO_DENYLIST="$work/denylist"
+          fi
+          unset DENYLIST_PATTERNS
+          node scripts/checks/check-public-safe.ts
+      - name: 코드 규칙 목록 검사
+        run: node scripts/checks/check-rule-index.ts
+
+  backend:
+    name: backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: "25"
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+      - name: 빌드와 테스트(ArchUnit 규칙 포함)
+        working-directory: backend
+        run: ./gradlew build
+      - name: 실패한 테스트 보고서
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: backend-test-reports
+          path: backend/build/reports/tests/
+          retention-days: 7
+
+  web:
+    name: web
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          package_json_file: web/package.json
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm typecheck
+      - run: pnpm build

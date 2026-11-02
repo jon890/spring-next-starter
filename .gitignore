@@ -1,0 +1,16 @@
+# OS·편집기
+.DS_Store
+.idea/
+.vscode/
+*.iml
+
+# backend
+backend/.gradle/
+backend/build/
+backend/out/
+backend/bin/
+
+# 환경 변수 파일. 예시 파일만 저장소에 둔다
+.env
+.env.*
+!.env.example
