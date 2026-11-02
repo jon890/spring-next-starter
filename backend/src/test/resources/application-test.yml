@@ -1,0 +1,8 @@
+# test 프로필이다. 테스트는 MySQL 모드의 H2 메모리 DB 를 쓴다. 운영과 같은 Flyway 마이그레이션을 적용한다.
+spring:
+  datasource:
+    url: jdbc:h2:mem:starter;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+  flyway:
+    locations: classpath:db/migration,classpath:db/test-migration
