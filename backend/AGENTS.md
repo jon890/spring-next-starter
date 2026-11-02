@@ -1,6 +1,6 @@
 # backend
 
-Spring Boot 4 와 Java 21, Gradle(Kotlin DSL)을 쓴다. 운영 DB 는 MySQL, 테스트 DB 는 MySQL 모드의 H2 이고 스키마는 Flyway 가 만든다.
+Spring Boot 4.0 과 Java 25, Gradle(Kotlin DSL)을 쓴다. JDK 25 가 없으면 Gradle toolchain 이 내려받는다. 운영 DB 는 MySQL, 테스트 DB 는 MySQL 모드의 H2 이고 스키마는 Flyway 가 만든다.
 
 저장소 전체에 걸리는 규칙은 루트 [`AGENTS.md`](../AGENTS.md) 가 갖는다.
 
