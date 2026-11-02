@@ -17,4 +17,5 @@
 | PR 과 main push | `.github/workflows/ci.yml` | public-safe(공개 정보, 규칙 목록), backend(`./gradlew build`), web(lint, 포맷, 타입, 빌드) |
 | PR | `.github/workflows/pr-size.yml` | 운영 코드 변경 줄. 400줄을 넘으면 `size:large` 라벨, 1500줄을 넘으면 실패 |
 
+로컬 검사는 `origin/main` 과의 공통 조상을 구하지 못하면(예: 원격이 없는 새 저장소) PR 크기 단계를 건너뛰고 알린다.
 각 검사의 정확한 조건은 그 스크립트와 workflow 가 갖는다. 코드 규칙은 [`docs/code-rules/INDEX.md`](../code-rules/INDEX.md) 가 갖는다.

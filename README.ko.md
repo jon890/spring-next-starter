@@ -41,7 +41,7 @@ cd my-app
 docker compose up -d mysql
 ```
 
-`compose.yaml` 의 계정은 로컬 전용 예시 값이다. 다른 환경에서는 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` 를 준다.
+`compose.yaml` 의 계정은 로컬 전용 예시 값이다. 다른 환경에서는 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` 를 반드시 준다. 주지 않으면 backend 가 로컬 기본값으로 붙으려 한다.
 
 ### 3. backend 실행
 
@@ -86,8 +86,8 @@ push 전에 빠른 검사를 돌린다.
 node scripts/dev/check-local.ts --fast
 ```
 
-공개 저장소 안전 검사, 코드 규칙 목록 검사, PR 크기 검사, web 의 lint·포맷·타입 검사, backend 테스트(ArchUnit 규칙 포함)를 차례로 돈다.
-`--fast` 없이 돌리면 backend 와 web 빌드까지 한다.
+공개 저장소 안전 검사, 코드 규칙 목록 검사, PR 크기 검사, web 의 lint·포맷·타입 검사, backend 테스트(ArchUnit 규칙 포함)를 돈다.
+`--fast` 없이 돌리면 backend 와 web 빌드까지 한다. 정확한 단계와 순서는 `scripts/dev/check-local.ts` 의 머리말이 갖는다.
 
 ### 공개 저장소 안전 검사
 

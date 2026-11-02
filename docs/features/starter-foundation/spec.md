@@ -11,7 +11,7 @@
 
 - backend: Spring Boot 골격, MySQL 과 Flyway, 감사 필드(생성·수정 시각), 예시 API 하나, ArchUnit 으로 검사하는 코드 규칙
 - web: Next.js 골격, 서버에서 backend 를 불러 연결 상태를 보이는 예시 화면
-- 규칙과 도구: `AGENTS.md`, 코드 규칙 번호 체계, PR 크기 상한, 공개 정보 검사, 로컬 빠른 검사
+- 규칙과 도구: `AGENTS.md`, 코드 규칙 번호 체계, PR 크기 상한, 공개 정보 검사, 로컬 빠른 검사, 편집기 설정과 줄바꿈 고정(`.editorconfig`, `.gitattributes`)
 - CI: GitHub Actions 의 public-safe, backend, web, pr-size
 - 문서: 영어 `README.md` 와 한국어 `README.ko.md`
 
@@ -22,7 +22,7 @@
 - 실제 MySQL 로 마이그레이션을 검사하는 CI job, 브라우저 E2E, AI 자동 리뷰 workflow
 - 패키지 이름을 한 번에 바꾸는 스크립트, Docker 이미지와 배포
 
-fos-assistant 에서 옮기지 않는 것: 가족 비서와 Hermes 에 딸린 규칙과 용어, 홈서버와 운영 저장소를 가리키는 절차, 그 제품 고유의 코드 규칙.
+규칙과 도구는 다른 저장소에서 쓰던 것을 일반화해 옮긴다. 특정 제품에 딸린 규칙, 용어, 운영 절차는 옮기지 않는다.
 
 ## 요구사항과 인수 조건
 
@@ -51,10 +51,10 @@ fos-assistant 에서 옮기지 않는 것: 가족 비서와 Hermes 에 딸린 �
 
 ### 구성
 
-- backend(R1, R2): Java 21, Spring Boot 4.1, Gradle Kotlin DSL 과 version catalog(`backend/gradle/libs.versions.toml`). 운영 MySQL, 테스트는 MySQL 모드 H2. Flyway 가 스키마를 만들고 Hibernate 는 `validate` 만 한다. 로컬 MySQL 은 루트 `compose.yaml` 이 띄운다. 접속 값은 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` 로 덮어쓴다.
+- backend(R1, R2): Java 21, Spring Boot 4.1, Gradle Kotlin DSL 과 version catalog(`backend/gradle/libs.versions.toml`). 운영 MySQL, 테스트는 MySQL 모드 H2. Flyway 가 스키마를 만들고 Hibernate 는 `validate` 만 한다. 시각은 UTC 로 저장한다. 로컬 MySQL 은 루트 `compose.yaml` 이 띄운다. 접속 값은 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` 로 덮어쓴다.
 - 감사 필드(R2): `BaseTimeEntity` 가 `created_at`, `updated_at` 을 갖고 `JpaAuditingConfig` 가 `Clock` 빈으로 채운다. 확인용 엔티티와 테이블은 테스트 소스와 `db/test-migration` 에만 둔다.
 - web(R4): Next.js 16 App Router, TypeScript, Tailwind CSS 4, pnpm. 컴포넌트 라이브러리는 넣지 않는다. backend 는 서버 컴포넌트에서 `BACKEND_URL` 로 부르고, 실패하면 `null` 로 바꿔 화면에 연결 안 됨을 보인다.
-- 규칙(R3): fos-assistant 의 번호 체계(INDEX.md 와 rule-N.md, 검사 연결)를 옮기고, 규칙은 검사가 붙은 일반적인 것만 둔다. 상세는 [`docs/code-rules/INDEX.md`](../../code-rules/INDEX.md).
+- 규칙(R3): 번호 체계(INDEX.md 와 rule-N.md, 검사 연결)를 두고, 규칙은 검사가 붙은 일반적인 것만 둔다. 상세는 [`docs/code-rules/INDEX.md`](../../code-rules/INDEX.md).
 - 스크립트(R5~R7): Node 24 가 바로 실행하는 TypeScript 로 쓴다. 템플릿을 쓰는 사람이 web 때문에 Node 를 이미 갖고 있어 다른 런타임이 필요 없다.
 - CI(R8): `.github/workflows/ci.yml`(public-safe, backend, web)과 `pr-size.yml`. secret 없이 포크한 저장소에서도 통과한다. `PUBLIC_REPO_DENYLIST` secret 은 선택이다.
 - 문서 언어: 루트 `README.md` 는 영어, `README.ko.md` 는 같은 내용의 한국어. `AGENTS.md`, `docs/`, 코드 주석은 한국어.
@@ -63,7 +63,7 @@ fos-assistant 에서 옮기지 않는 것: 가족 비서와 Hermes 에 딸린 �
 
 - backend 가 꺼져 있거나 3초 안에 답하지 않으면 web 은 `Not connected` 를 보인다(R4).
 - 공개 정보 검사는 걸린 줄의 내용을 출력하지 않고 파일과 줄 번호, 종류만 보인다. 값 목록에 걸린 비공개 값이 CI 로그에 남지 않게 하려는 것이다(R5).
-- 값 목록 파일을 읽지 못하면 2 로 끝난다. 변수가 없으면 형태 패턴만 검사하고 알린다(R5).
+- 값 목록 파일을 읽지 못하거나 정규식이 잘못됐으면 줄 번호만 알리고 2 로 끝난다. git 저장소 밖처럼 검사를 돌리지 못해도 2 로 끝난다. 변수가 없으면 형태 패턴만 검사하고 알린다(R5).
 
 ### 테스트 방법
 

@@ -41,7 +41,7 @@ cd my-app
 docker compose up -d mysql
 ```
 
-The account in `compose.yaml` is a local-only example. In other environments, set `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD`.
+The account in `compose.yaml` is a local-only example. In any other environment, always set `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD`; otherwise the backend falls back to the local defaults.
 
 ### 3. Run the backend
 
@@ -86,8 +86,8 @@ Run the fast checks before you push:
 node scripts/dev/check-local.ts --fast
 ```
 
-It runs, in order: the public-repository safety check, the code rule index check, the PR size check, web lint/format/typecheck, and the backend tests (including ArchUnit rules).
-Run it without `--fast` to also build the backend and the web app.
+It runs the public-repository safety check, the code rule index check, the PR size check, web lint/format/typecheck, and the backend tests (including ArchUnit rules).
+Run it without `--fast` to also build the backend and the web app. The exact steps and their order are described at the top of `scripts/dev/check-local.ts`.
 
 ### Public-repository safety check
 
