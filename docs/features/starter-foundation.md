@@ -5,7 +5,7 @@
 
 ## 실행 흐름
 
-1. `compose.yaml` 이 로컬 MySQL(`starter` 데이터베이스)을 띄운다.
+1. `compose.yaml` 이 로컬 MySQL(`starter` 데이터베이스)을 띄운다. healthcheck 는 TCP 접속으로 본다.
 2. backend 가 기동하며 Flyway 가 `db/migration` 을 적용하고, Hibernate 가 엔티티와 스키마를 대조한다.
 3. web 의 첫 화면이 요청마다 서버에서 `GET {BACKEND_URL}/api/system/info` 를 부른다. 답이 오면 애플리케이션 이름과 서버 시각을, 실패하면 연결 안 됨을 보인다.
 

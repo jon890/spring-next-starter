@@ -38,9 +38,10 @@ cd my-app
 ### 2. Start MySQL
 
 ```bash
-docker compose up -d mysql
+docker compose up -d --wait mysql
 ```
 
+`--wait` returns once MySQL accepts connections (the first start takes a little longer while it initializes).
 The account in `compose.yaml` is a local-only example. In any other environment, always set `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD`; otherwise the backend falls back to the local defaults.
 
 ### 3. Run the backend

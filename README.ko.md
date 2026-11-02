@@ -38,9 +38,10 @@ cd my-app
 ### 2. MySQL 띄우기
 
 ```bash
-docker compose up -d mysql
+docker compose up -d --wait mysql
 ```
 
+`--wait` 는 MySQL 이 접속을 받을 때까지 기다린다. 첫 기동은 초기화 때문에 조금 더 걸린다.
 `compose.yaml` 의 계정은 로컬 전용 예시 값이다. 다른 환경에서는 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` 를 반드시 준다. 주지 않으면 backend 가 로컬 기본값으로 붙으려 한다.
 
 ### 3. backend 실행

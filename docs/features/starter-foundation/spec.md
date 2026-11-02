@@ -28,7 +28,7 @@
 
 | ID | 요구사항 | 관측할 인수 조건 |
 | --- | --- | --- |
-| R1 | backend 가 MySQL 에 붙어 뜨고 예시 API 와 health 를 돌려준다 | `docker compose up -d mysql` 뒤 `./gradlew bootRun` 이 뜨고 `GET /api/system/info` 가 애플리케이션 이름과 시각을, `GET /actuator/health` 가 `UP` 을 돌려준다 |
+| R1 | backend 가 MySQL 에 붙어 뜨고 예시 API 와 health 를 돌려준다 | `docker compose up -d --wait mysql` 뒤 `./gradlew bootRun` 이 뜨고 `GET /api/system/info` 가 애플리케이션 이름과 시각을, `GET /actuator/health` 가 `UP` 을 돌려준다 |
 | R2 | 엔티티의 생성·수정 시각을 주입된 Clock 으로 채운다 | `BaseTimeEntityTest` 가 저장 때 두 시각이 시계 값과 같고, 수정 때 `updated_at` 만 바뀌는 것을 확인한다 |
 | R3 | 코드 규칙이 검사와 연결된다 | `ArchitectureRulesTest` 가 rule-1~4 를 검사하고, 일부러 위반을 만들면 실패한다. `check-rule-index.ts` 가 목록과 파일, 검사의 짝을 확인한다 |
 | R4 | web 이 서버에서 backend 를 불러 연결 상태를 보인다 | backend 가 떠 있으면 첫 화면에 `Connected to starter` 가, 꺼져 있으면 `Not connected` 가 보이고 화면이 깨지지 않는다 |
