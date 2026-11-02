@@ -6,9 +6,9 @@ export type SystemInfo = {
   serverTime: string;
 };
 
-// 주소는 실행 환경에서 받는다. 값이 없으면 로컬에서 띄운 backend 를 부른다.
+// 주소는 실행 환경에서 받는다. 값이 없거나 비었으면 로컬에서 띄운 backend 를 부른다.
 function backendUrl(): string {
-  return process.env.BACKEND_URL ?? "http://localhost:8080";
+  return process.env.BACKEND_URL || "http://localhost:8080";
 }
 
 export async function fetchSystemInfo(): Promise<SystemInfo | null> {
