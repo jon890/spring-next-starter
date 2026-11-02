@@ -13,7 +13,8 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-ustarter", "-pstarter"]
+      # TCP 로 확인한다. 첫 기동의 초기화 단계는 소켓으로만 답하는 임시 서버라, 소켓으로 보면 접속을 받기 전에 healthy 가 된다.
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-ustarter", "-pstarter"]
       interval: 5s
       timeout: 3s
       retries: 20
