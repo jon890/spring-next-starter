@@ -15,6 +15,7 @@
 | --- | --- | --- |
 | push 전 | `scripts/dev/check-local.ts --fast` | 공개 정보, 규칙 목록, PR 크기, web 의 lint·포맷·타입, backend 테스트 |
 | PR 과 main push | `.github/workflows/ci.yml` | public-safe(공개 정보, 규칙 목록), backend(`./gradlew build`), web(lint, 포맷, 타입, 빌드) |
+| Ready PR | `.github/workflows/claude-code-review.yml` | secret 이 있으면 Claude 리뷰, 없으면 건너뜀 |
 | PR | `.github/workflows/pr-size.yml` | 운영 코드 변경 줄. 400줄을 넘으면 `size:large` 라벨, 1500줄을 넘으면 실패 |
 
 로컬 검사는 `origin/main` 과의 공통 조상을 구하지 못하면(예: 원격이 없는 새 저장소) PR 크기 단계를 건너뛰고 알린다.

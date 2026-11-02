@@ -9,17 +9,17 @@ It ships with a running skeleton, code rules that are enforced by tests, a publi
 
 | Path | What it is |
 | --- | --- |
-| `backend/` | Spring Boot 4, Java 21, Gradle (Kotlin DSL), MySQL + Flyway, JPA auditing (`created_at`, `updated_at`) driven by an injected `Clock`, ArchUnit rules |
+| `backend/` | Spring Boot 4, Java 25, Gradle (Kotlin DSL), MySQL + Flyway, JPA auditing (`created_at`, `updated_at`) driven by an injected `Clock`, ArchUnit rules |
 | `web/` | Next.js 16 (App Router), TypeScript, Tailwind CSS 4, pnpm |
 | `compose.yaml` | Local MySQL for development |
 | `scripts/` | Local checks, public-repository safety check, PR size check (TypeScript run directly by Node 24) |
 | `docs/code-rules/` | Numbered code rules, each linked to the check that enforces it |
-| `.github/workflows/` | CI (`public-safe`, `backend`, `web`) and PR size check |
+| `.github/workflows/` | CI (`public-safe`, `backend`, `web`), PR size check, and an optional Claude code review |
 | `AGENTS.md` | Repository rules for humans and AI coding agents (`CLAUDE.md` links to it) |
 
 ## Prerequisites
 
-- JDK 21
+- A JDK 17 or later to run Gradle. If JDK 25 is not installed, Gradle downloads it on the first build (toolchain auto-provisioning), which takes a few minutes once.
 - Node.js 24 or later
 - pnpm, enabled through Corepack: `corepack enable`
 - Docker (for the local MySQL)
@@ -71,6 +71,16 @@ pnpm dev
 Open <http://localhost:3000>. The page shows **Connected to starter** when the backend is running, and **Not connected** otherwise.
 The web server calls the backend at `BACKEND_URL` (default `http://localhost:8080`). To change it, copy `web/.env.example` to `web/.env.local`.
 
+## Adding a component library
+
+The web app ships with Tailwind CSS only. To add [shadcn/ui](https://ui.shadcn.com/):
+
+```bash
+cd web
+pnpm dlx shadcn@latest init
+pnpm dlx shadcn@latest add button
+```
+
 ## Make it yours
 
 - Rename the Java package `com.example.starter` and the `group` in `backend/build.gradle.kts`.
@@ -105,6 +115,16 @@ In CI, put the same lines in a repository secret named `PUBLIC_REPO_DENYLIST`. I
 
 Each rule in [`docs/code-rules/INDEX.md`](docs/code-rules/INDEX.md) has a fixed number, a reason, and a linked check.
 `scripts/checks/check-rule-index.ts` verifies that the index, the rule files, and the checks match.
+
+### Claude code review (optional)
+
+`.github/workflows/claude-code-review.yml` asks Claude to review a PR once when it is opened or marked ready for review. Drafts and pull requests from forks are skipped.
+To turn it on, add one of these repository secrets:
+
+- `ANTHROPIC_API_KEY`: an API key from the Anthropic Console. Each review is billed as API usage, so the cost depends on the PR size.
+- `CLAUDE_CODE_OAUTH_TOKEN`: a token created with `claude setup-token`, which uses your Claude subscription.
+
+Without either secret, the review job is skipped and CI stays green.
 
 ### PR size
 

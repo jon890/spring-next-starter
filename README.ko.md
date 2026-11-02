@@ -9,17 +9,17 @@
 
 | 경로 | 내용 |
 | --- | --- |
-| `backend/` | Spring Boot 4, Java 21, Gradle(Kotlin DSL), MySQL 과 Flyway, 주입된 `Clock` 으로 채우는 JPA auditing(`created_at`, `updated_at`), ArchUnit 규칙 |
+| `backend/` | Spring Boot 4, Java 25, Gradle(Kotlin DSL), MySQL 과 Flyway, 주입된 `Clock` 으로 채우는 JPA auditing(`created_at`, `updated_at`), ArchUnit 규칙 |
 | `web/` | Next.js 16(App Router), TypeScript, Tailwind CSS 4, pnpm |
 | `compose.yaml` | 로컬 개발용 MySQL |
 | `scripts/` | 로컬 검사, 공개 저장소 안전 검사, PR 크기 검사(Node 24 가 바로 실행하는 TypeScript) |
 | `docs/code-rules/` | 번호를 붙인 코드 규칙. 규칙마다 검사가 연결돼 있다 |
-| `.github/workflows/` | CI(`public-safe`, `backend`, `web`)와 PR 크기 검사 |
+| `.github/workflows/` | CI(`public-safe`, `backend`, `web`), PR 크기 검사, 선택 기능인 Claude 코드 리뷰 |
 | `AGENTS.md` | 사람과 AI 코딩 에이전트가 함께 읽는 저장소 규칙(`CLAUDE.md` 는 이 파일의 링크) |
 
 ## 준비물
 
-- JDK 21
+- Gradle 을 돌릴 JDK 17 이상. JDK 25 가 없으면 Gradle 이 첫 빌드 때 내려받는다(toolchain 자동 설치). 처음 한 번 몇 분 걸린다.
 - Node.js 24 이상
 - pnpm. Corepack 으로 켠다: `corepack enable`
 - Docker(로컬 MySQL 용)
@@ -71,6 +71,16 @@ pnpm dev
 <http://localhost:3000> 을 연다. backend 가 떠 있으면 **Connected to starter**, 아니면 **Not connected** 가 보인다.
 web 서버는 `BACKEND_URL`(기본 `http://localhost:8080`)로 backend 를 부른다. 바꾸려면 `web/.env.example` 을 `web/.env.local` 로 복사해 고친다.
 
+## 컴포넌트 라이브러리 붙이기
+
+web 은 Tailwind CSS 만 담았다. [shadcn/ui](https://ui.shadcn.com/) 를 붙이려면 아래를 실행한다.
+
+```bash
+cd web
+pnpm dlx shadcn@latest init
+pnpm dlx shadcn@latest add button
+```
+
 ## 내 프로젝트로 바꾸기
 
 - Java 패키지 `com.example.starter` 와 `backend/build.gradle.kts` 의 `group` 을 바꾼다.
@@ -105,6 +115,16 @@ CI 에서는 같은 줄을 `PUBLIC_REPO_DENYLIST` 라는 repository secret 에 �
 
 [`docs/code-rules/INDEX.md`](docs/code-rules/INDEX.md) 의 규칙마다 고정 번호와 까닭, 연결한 검사가 있다.
 `scripts/checks/check-rule-index.ts` 가 목록과 규칙 파일, 검사가 맞는지 확인한다.
+
+### Claude 코드 리뷰(선택)
+
+`.github/workflows/claude-code-review.yml` 이 PR 을 열거나 Ready 로 올릴 때 Claude 에게 한 번 리뷰를 맡긴다. Draft 와 포크에서 연 PR 은 건너뛴다.
+켜려면 아래 repository secret 중 하나를 넣는다.
+
+- `ANTHROPIC_API_KEY`: Anthropic Console 에서 만든 API 키. 리뷰마다 API 사용량으로 과금되고 비용은 PR 크기에 따라 다르다.
+- `CLAUDE_CODE_OAUTH_TOKEN`: `claude setup-token` 으로 만든 토큰. Claude 구독을 쓴다.
+
+둘 다 없으면 리뷰 job 을 건너뛰고 CI 는 통과한다.
 
 ### PR 크기
 
