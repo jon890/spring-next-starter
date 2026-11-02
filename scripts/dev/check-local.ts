@@ -74,7 +74,13 @@ for (const step of steps) {
     continue;
   }
   const started = Date.now();
-  const result = spawnSync(step.command, step.args, { cwd: step.cwd, encoding: "utf8", maxBuffer: 256 * 1024 * 1024 });
+  // Windows 의 gradlew.bat 과 pnpm.cmd 는 셸을 거쳐야 실행된다.
+  const result = spawnSync(step.command, step.args, {
+    cwd: step.cwd,
+    encoding: "utf8",
+    maxBuffer: 256 * 1024 * 1024,
+    shell: process.platform === "win32",
+  });
   const seconds = Math.round((Date.now() - started) / 1000);
   const log = join(logDir, `${step.name}.log`);
   writeFileSync(log, `${result.stdout ?? ""}${result.stderr ?? ""}${result.error ? String(result.error) : ""}`);

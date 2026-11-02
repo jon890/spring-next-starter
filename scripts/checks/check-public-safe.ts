@@ -13,7 +13,7 @@
 //
 // 종료 코드: 0 찾지 못했다, 1 의심스러운 줄을 찾았다, 2 검사를 돌리지 못했다
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 
 // 이 파일은 패턴 자체를 담으므로 검사에서 뺀다.
 const SELF = "scripts/checks/check-public-safe.ts";
@@ -21,7 +21,11 @@ const SELF = "scripts/checks/check-public-safe.ts";
 // 예시로 써도 되는 메일 도메인이다. 그 밖의 메일 주소는 개인 정보로 본다.
 const EMAIL_ALLOWED = /@(example\.(com|org|net)|users\.noreply\.github\.com)$/i;
 
-type Shape = { pattern: RegExp; reason: string; allow?: (match: string) => boolean };
+// git@github.com:owner/repo 같은 SSH 원격 주소는 메일 주소가 아니다.
+const SSH_REMOTE = /^git@[A-Za-z0-9.-]+$/;
+
+// allow 는 걸린 문자열과 그 뒤에 이어지는 글자를 받는다.
+type Shape = { pattern: RegExp; reason: string; allow?: (match: string, rest: string) => boolean };
 
 const SHAPES: Shape[] = [
   { pattern: /-----BEGIN [A-Z ]*PRIVATE KEY-----/, reason: "개인키" },
@@ -39,7 +43,7 @@ const SHAPES: Shape[] = [
   {
     pattern: /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/,
     reason: "메일 주소",
-    allow: (match) => EMAIL_ALLOWED.test(match),
+    allow: (match, rest) => EMAIL_ALLOWED.test(match) || (SSH_REMOTE.test(match) && rest.startsWith(":")),
   },
 ];
 
@@ -48,17 +52,35 @@ type Hit = { file: string; line: number; reason: string };
 function trackedFiles(): string[] {
   return execFileSync("git", ["ls-files", "-z"], { encoding: "utf8" })
     .split("\0")
-    .filter((file) => file && file !== SELF && existsSync(file));
+    .filter((file) => file && file !== SELF && isFile(file));
+}
+
+// 지운 파일, 디렉터리(서브모듈), 링크가 가리키는 대상이 없는 것은 건너뛴다.
+function isFile(file: string): boolean {
+  try {
+    return statSync(file).isFile();
+  } catch {
+    return false;
+  }
 }
 
 function readDenylist(): RegExp[] | null {
   const file = process.env.PUBLIC_REPO_DENYLIST;
   if (!file) return null;
-  return readFileSync(file, "utf8")
+  const patterns: RegExp[] = [];
+  readFileSync(file, "utf8")
     .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line && !line.startsWith("#"))
-    .map((line) => new RegExp(line));
+    .forEach((raw, index) => {
+      const line = raw.trim();
+      if (!line || line.startsWith("#")) return;
+      try {
+        patterns.push(new RegExp(line));
+      } catch {
+        // 오류 메시지에 패턴 원문이 들어 있어 줄 번호만 알린다.
+        throw new Error(`값 목록 ${index + 1}번째 줄의 정규식이 잘못됐다`);
+      }
+    });
+  return patterns;
 }
 
 function scan(files: string[], denylist: RegExp[]): Hit[] {
@@ -73,8 +95,8 @@ function scan(files: string[], denylist: RegExp[]): Hit[] {
       .forEach((text, index) => {
         for (const shape of SHAPES) {
           const global = new RegExp(shape.pattern.source, shape.pattern.flags + "g");
-          const matches = [...text.matchAll(global)].map((m) => m[0]);
-          if (matches.some((match) => !shape.allow?.(match))) {
+          const matches = [...text.matchAll(global)];
+          if (matches.some((m) => !shape.allow?.(m[0], text.slice(m.index + m[0].length)))) {
             hits.push({ file, line: index + 1, reason: shape.reason });
           }
         }
@@ -91,13 +113,20 @@ function main() {
   try {
     denylist = readDenylist();
   } catch (error) {
-    console.error(`값 목록을 읽지 못했다: ${(error as Error).message}`);
+    const code = (error as NodeJS.ErrnoException).code;
+    console.error(code ? `값 목록 파일을 읽지 못했다: ${code}` : (error as Error).message);
     process.exit(2);
   }
   if (denylist === null) {
     console.log("알림: PUBLIC_REPO_DENYLIST 가 없어 형태 패턴만 검사했다.");
   }
-  const hits = scan(trackedFiles(), denylist ?? []);
+  let hits: Hit[];
+  try {
+    hits = scan(trackedFiles(), denylist ?? []);
+  } catch (error) {
+    console.error(`검사를 돌리지 못했다: ${(error as Error).message}`);
+    process.exit(2);
+  }
   if (hits.length === 0) {
     console.log("통과: 공개 저장소에 적으면 안 되는 것을 찾지 못했다.");
     return;
